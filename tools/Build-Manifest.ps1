@@ -21,10 +21,20 @@ $Lines.Add("# ProTanki GitHub auto-update manifest")
 $Lines.Add("# Rebuild with: powershell -ExecutionPolicy Bypass -File tools\\Build-Manifest.ps1")
 $Lines.Add("version=$Version")
 
+$ExcludedPaths = @(
+    "Reset_Local_SWFs.bat",
+    "Restore_Official_Client.bat",
+    "Start_Local_ProTanki.bat",
+    "Stop_Local_Proxy.bat"
+)
+
 Get-ChildItem -LiteralPath $FilesRoot -Recurse -File |
     Sort-Object FullName |
     ForEach-Object {
         $Relative = $_.FullName.Substring($FilesRoot.Length + 1).Replace("\", "/")
+        if ($ExcludedPaths -contains $Relative) {
+            return
+        }
         $Hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
         $Length = $_.Length
         $Lines.Add("file=$Relative|$Hash|$Length")
